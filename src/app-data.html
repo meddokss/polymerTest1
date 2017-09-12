@@ -1,0 +1,69 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="app-data">
+  <script>
+	  (function() {
+		  var instances = [];
+		  var vars = Object.create(Polymer.Base);
+
+	    Polymer({
+			  is: 'app-data',
+
+			  properties: {
+				  data: {
+					  type: Object,
+					  value: '',
+					  notify: true,
+					  readonly: false,
+					  observer: '_data_changed'
+				  },
+				  key: String
+			  },
+
+			  created: function() {
+				  key = this.getAttribute('key');
+				  if (!key) {
+					  console.log(this);
+			  console.log(1);
+					  throw('app-data element requires key');
+				  }
+				  instances.push({key:key, instance:this});
+			  },
+
+			  detached: function() {
+				  key = this.getAttribute('key');
+				  var i = instances.indexOf({key:key, instance:this});
+				  if (i >= 0) {
+					  instances.splice(i, 1);
+				  }
+			  },
+
+			  _data_changed: function(newvalue, oldvalue) {
+				  key = this.getAttribute('key');
+
+				  if (!key) {
+					  throw('_data_changed: app-data element requires key');
+				  }
+				  vars.set(key, newvalue);
+
+				  // notify the instances with the correct key
+				  for (var i = 0; i < instances.length; i++) {
+					  if (instances[i].key == key) {
+						  instances[i].instance.notifyPath('data', newvalue);
+					  }
+				  }
+			  }
+		  });
+
+	  }());
+  </script>
+</dom-module>
